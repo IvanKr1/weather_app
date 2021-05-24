@@ -1,0 +1,17 @@
+.container {
+display: flex;
+justify-content: center;
+align-items: center;
+margin-top: 3rem;
+flex-direction: column;
+}
+
+.search__input {
+  border: none;
+  border: 1px solid steelblue;
+}
+
+.body__container {
+  border: 2px solid red;
+ 
+}
