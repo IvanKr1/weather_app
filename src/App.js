@@ -1,6 +1,8 @@
 import React, { Component } from "react";
-import "./css/App.css";
-import { BiSearchAlt } from "react-icons/bi";
+import "./scss/App.scss";
+import Wind from "./assests/wind.png";
+import Rain from "./assests/rain.png";
+import Cloud from "./assests/cloud.png";
 
 const API_KEY = "dcccaa9d82acf4db1b7cc97d1fdefa87";
 
@@ -48,7 +50,7 @@ export class App extends Component {
     }
   };
 
-  getDate = (d) => {
+  getDate = (weather) => {
     let months = [
       "January",
       "February",
@@ -73,10 +75,11 @@ export class App extends Component {
       "Saturday",
     ];
 
-    let day = days[d.getDay()];
-    let date = d.getDate();
-    let month = months[d.getMonth()];
-    let year = d.getFullYear();
+    let localDate = this.getLocalTime(weather);
+
+    let day = days[localDate.getDay()];
+    let date = localDate.getDate();
+    let month = months[localDate.getMonth()];
 
     switch (date) {
       case 1:
@@ -91,23 +94,40 @@ export class App extends Component {
       default:
         date = date + "th";
     }
+    return `${day}, ${date} ${month}`;
+  };
 
-    console.log(`date`, date);
+  formatTime = (weather) => {
+    let date = this.getLocalTime(weather) || new Date(weather);
 
-    return `${day}, ${date} ${month} ${year}`;
+    // Format Time to am/pm
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    let ampm = hours >= 12 ? "pm" : "am";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    let strTime = hours + ":" + minutes + ampm;
+
+    return strTime;
+  };
+
+  getLocalTime = (weather) => {
+    if (typeof weather === "object") {
+      let date;
+      let localTime = new Date().getTime();
+      let localOffset = new Date().getTimezoneOffset() * 60000;
+      let utc = localTime + localOffset;
+      date = new Date(utc + 1000 * weather.timezone);
+
+      return date;
+    }
+
+    return false;
   };
 
   render() {
     const { cityName, forecastWeather, currentWeather } = this.state;
-
-    let hours =
-      new Date().getHours() < 10
-        ? "0" + new Date().getHours()
-        : new Date().getHours();
-    let minutes =
-      new Date().getMinutes() < 10
-        ? "0" + new Date().getMinutes()
-        : new Date().getMinutes();
 
     if (currentWeather) {
       if (currentWeather.name === "Donji grad") {
@@ -115,29 +135,111 @@ export class App extends Component {
       }
     }
 
-    console.log(`forecastWeather`, forecastWeather);
+    console.log(`currentWeather`, currentWeather);
+
     return (
       <div className="container">
         <div className="input__container">
-          <BiSearchAlt className="search__icon" />
           <input
             className="search__input"
             type="text"
-            placeholder="Search...."
-            onChange={(e) =>
+            placeholder="Search..."
+            onChange={(e) => {
               this.setState({
                 cityName: e.target.value,
-              })
-            }
+              });
+            }}
             value={cityName}
             onKeyPress={(e) => this.searchWeather(e, cityName)}
           />
         </div>
-        <div className="body__container">
-          <div>{this.getDate(new Date())}</div>
-          <div>{`${hours}:${minutes}`}</div>
-          <div>{currentWeather ? currentWeather.name : ""}</div>
-        </div>
+        {currentWeather && forecastWeather ? (
+          <React.Fragment>
+            <div className="description__container">
+              <div className="description__date">
+                {currentWeather ? this.getDate(currentWeather) : ""}
+              </div>
+              <div className="description__time">
+                {currentWeather ? this.formatTime(currentWeather) : ""}
+              </div>
+              <div className="description__cityName">{currentWeather.name}</div>
+              <div className="description__image__container">
+                <div className="description_temp">
+                  {`${Math.round(currentWeather.main.temp)}°c`}
+                </div>
+                <img
+                  className="description__weatherImage"
+                  src={`http://openweathermap.org/img/w/${currentWeather.weather[0].icon}.png`}
+                  style={{ width: "3rem", height: "3rem", marginLeft: "1rem" }}
+                  alt="Weather icon"
+                />
+              </div>
+            </div>
+            <div className="weather__container">
+              <div className="weather__wind">
+                <img
+                  className="weather__img"
+                  style={{ width: "2rem", height: "2rem" }}
+                  src={Wind}
+                  alt="wind icon"
+                />
+                <div className="weather__text">{`${currentWeather.wind.speed} km/h`}</div>
+              </div>
+              <p className="border"></p>
+              <div className="weather__rain">
+                <img
+                  className="weather__img"
+                  style={{ width: "2rem", height: "2rem" }}
+                  src={Rain}
+                />
+                <div className="weather__text">{`${currentWeather.main.humidity}%`}</div>
+              </div>
+              <p className="border"></p>
+              <div className="weather__cloud">
+                <img
+                  className="weather__img"
+                  style={{ width: "2rem", height: "2rem" }}
+                  src={Cloud}
+                />
+                <div className="weather__text">{`${currentWeather.clouds.all}%`}</div>
+              </div>
+            </div>
+            <div className="border__footer"></div>
+            <div className="forecast__container">
+              {forecastWeather.list.map((weatherData, index) => {
+                if (index <= 3) {
+                  console.log(`weatherData`, weatherData);
+                  return (
+                    <div>
+                      <div className="forecast__time">
+                        <div className="weather__text">
+                          {this.formatTime(weatherData.dt_txt).replace(
+                            ":00",
+                            ""
+                          )}
+                        </div>
+                      </div>
+                      <img
+                        className="description__weatherImage"
+                        src={`http://openweathermap.org/img/w/${weatherData.weather[0].icon}.png`}
+                        style={{
+                          width: "2.5rem",
+                          height: "2.5rem",
+                        }}
+                        alt="Weather icon"
+                      />
+                      <div className="forecast__temp weather__text">{`${Math.round(
+                        weatherData.main.temp
+                      )}°c`}</div>
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </React.Fragment>
+        ) : (
+          ""
+        )}
       </div>
     );
   }
