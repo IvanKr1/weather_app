@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import "./scss/App.scss";
-import Wind from "./assests/wind.png";
-import Rain from "./assests/rain.png";
-import Cloud from "./assests/cloud.png";
+import Wind from "./assets/wind.png";
+import Rain from "./assets/rain.png";
+import Cloud from "./assets/cloud.png";
+import Error from "./assets/error.png";
 
 const API_KEY = "dcccaa9d82acf4db1b7cc97d1fdefa87";
 
@@ -18,7 +19,7 @@ export class App extends Component {
   }
 
   searchWeather = (e, cityName) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && cityName.length !== 0) {
       let formatName = cityName.toLowerCase().split("");
 
       formatName =
@@ -135,8 +136,6 @@ export class App extends Component {
       }
     }
 
-    console.log(`currentWeather`, currentWeather);
-
     return (
       <div className="container">
         <div className="input__container">
@@ -153,7 +152,7 @@ export class App extends Component {
             onKeyPress={(e) => this.searchWeather(e, cityName)}
           />
         </div>
-        {currentWeather && forecastWeather ? (
+        {currentWeather?.main && forecastWeather?.cod === "200" ? (
           <React.Fragment>
             <div className="description__container">
               <div className="description__date">
@@ -183,7 +182,11 @@ export class App extends Component {
                   src={Wind}
                   alt="wind icon"
                 />
-                <div className="weather__text">{`${currentWeather.wind.speed} km/h`}</div>
+                <div className="weather__text">
+                  {`${Math.round(currentWeather.wind.speed * 60 * 60)
+                    .toString()
+                    .charAt(0)} km/h`}
+                </div>
               </div>
               <p className="border"></p>
               <div className="weather__rain">
@@ -208,7 +211,6 @@ export class App extends Component {
             <div className="forecast__container">
               {forecastWeather.list.map((weatherData, index) => {
                 if (index <= 3) {
-                  console.log(`weatherData`, weatherData);
                   return (
                     <div>
                       <div className="forecast__time">
@@ -239,6 +241,18 @@ export class App extends Component {
           </React.Fragment>
         ) : (
           ""
+        )}
+        {currentWeather?.cod === "404" && (
+          <div className="error__container">
+            <img
+              src={Error}
+              style={{ width: "2rem", height: "2rem" }}
+              alt="Weather icon"
+            />
+            <div className="error_message">
+              Please enter correct city or country!
+            </div>
+          </div>
         )}
       </div>
     );
