@@ -48,6 +48,16 @@ export class App extends Component {
             forecastWeather: result,
           });
         });
+
+      // fetch(
+      //   `https://api.openweathermap.org/data/2.5/forecast?q=${formatName}&appid=${API_KEY}&units=metric`
+      // )
+      //   .then((res) => res.json())
+      //   .then((result) => {
+      //     this.setState((state, props) => {
+      //       return { forecastWeather: result };
+      //     });
+      //   });
     }
   };
 
@@ -152,7 +162,7 @@ export class App extends Component {
             onKeyPress={(e) => this.searchWeather(e, cityName)}
           />
         </div>
-        {currentWeather?.main && forecastWeather?.cod === "200" ? (
+        {currentWeather && forecastWeather ? (
           <React.Fragment>
             <div className="description__container">
               <div className="description__date">
